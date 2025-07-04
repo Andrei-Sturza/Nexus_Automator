@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+
+from backend.config_devices.switch_configs.basic_config_switch import configure_basic_switch
 from backend.task_engine import load_device_configs, establish_connection
 from backend.config_devices.switch_configs import vlan_config
 from backend.config_devices.switch_configs import save_config_switch

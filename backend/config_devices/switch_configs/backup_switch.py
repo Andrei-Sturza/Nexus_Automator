@@ -1,4 +1,4 @@
-#This functions are used to backup the configuration of the device
+#These functions are used for backup the configuration of the device
 
 import os
 import datetime
