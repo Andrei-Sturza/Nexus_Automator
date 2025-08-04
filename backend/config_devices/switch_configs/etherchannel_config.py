@@ -1,9 +1,7 @@
-from backend.task_engine import establish_connection
+from backend.task_engine import establish_connection, extract_netmiko_config
 from netmiko.exceptions import NetmikoTimeoutException, NetmikoAuthenticationException
 
-
 def creating_etherchannel():
-
     eth_type = input('\nPlease enter the type of EtherChannel (LACP or PAgP): ').strip().lower()
     while eth_type not in ("lacp", "pagp"):
         eth_type = input("Invalid type. Please enter LACP or PAgP: ").strip().lower()
@@ -16,17 +14,22 @@ def creating_etherchannel():
     ]
     return commands
 
-
 def configure_etherchannel(device_name, device_config):
-
     try:
         print(f"\n🔌 Connecting to {device_name} ({device_config['ip']})")
-        net_connect = establish_connection(device_config)
 
+        # Extract Netmiko-specific fields
+        netmiko_config = extract_netmiko_config(device_config)
+
+        # Connect to the device
+        net_connect = establish_connection(netmiko_config)
+
+        # Build and send EtherChannel config
         config = creating_etherchannel()
-        net_connect.send_config_set(config)
+        output = net_connect.send_config_set(config)
 
         print(f"\n✅ EtherChannel configured successfully on {device_name}")
+        print("🔧 Output:\n", output)
 
         net_connect.disconnect()
 

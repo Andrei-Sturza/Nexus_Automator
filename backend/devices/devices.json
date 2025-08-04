@@ -1,12 +1,12 @@
 {
-  "router2": {
+  "router1": {
     "device_type": "cisco_ios",
     "ip": "10.10.10.100",
     "username": "admin",
     "password": "cisco",
     "secret": "cisco"
   },
-   "router1": {
+   "router2": {
     "device_type": "cisco_ios",
     "ip": "10.10.10.101",
     "username": "admin",

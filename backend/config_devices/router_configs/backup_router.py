@@ -1,41 +1,37 @@
-#This functions are used to backup the configuration of the device
-
 import os
 import datetime
-from backend.task_engine import load_device_configs, establish_connection
+from backend.task_engine import establish_connection, extract_netmiko_config, load_device_configs
 
-#Backup for one device
+
+# Backup for one device
 def backup_device(name, config):
-
-    #Timestamp used
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-    #Creating a directory for backup storing
     os.makedirs("router_backups", exist_ok=True)
 
     try:
+        # Extract only Netmiko relevant config
+        netmiko_config = extract_netmiko_config(config)
 
-        #Connecting to the device
-        net_connect = establish_connection(config)
+        # Establish connection with cleaned config
+        net_connect = establish_connection(netmiko_config)
 
-        #Retriving the running configuration
+        # Retrieve running configuration
         output = net_connect.send_command("show running-config")
 
-        #Disconnecting from the device
+        # Disconnect
         net_connect.disconnect()
 
-        #Naming the file using the timestamp and the name of the router + ip to better access the backup
-        filename = f"router_backups/{name}_{config['ip']}_{timestamp}.txt"
+        # File naming
+        filename = f"router_backups/{name}_{netmiko_config['ip']}_{timestamp}.txt"
         with open(filename, "w") as f:
-            #Writing in file
             f.write(output)
         print(f"[SUCCESS] Backup saved: {filename}")
+
     except Exception as e:
         print(f"[ERROR] Could not backup {name}: {e}")
 
-#Backup for all devices using the function above
+# Backup all devices
 def backup_all_devices():
-
     devices = load_device_configs()
     if not devices:
         print("No devices found to backup.")

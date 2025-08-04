@@ -1,8 +1,7 @@
-from backend.task_engine import establish_connection
+from backend.task_engine import establish_connection, extract_netmiko_config
 from netmiko.exceptions import NetmikoTimeoutException, NetmikoAuthenticationException
 
 def build_stp_config():
-
     config = []
 
     vlan_id = input("\n📥 Enter VLAN ID to configure STP on: ").strip()
@@ -23,10 +22,13 @@ def build_stp_config():
     return config
 
 def configure_stp(device_name, device_config):
-
     try:
         print(f"\n🔌 Connecting to {device_name} ({device_config['ip']})...")
-        net_connect = establish_connection(device_config)
+
+        # Extract Netmiko-ready configuration
+        netmiko_config = extract_netmiko_config(device_config)
+
+        net_connect = establish_connection(netmiko_config)
 
         config = build_stp_config()
         net_connect.send_config_set(config)

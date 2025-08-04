@@ -1,46 +1,42 @@
-#These functions are used for backup the configuration of the device
-
 import os
 import datetime
-from backend.task_engine import load_device_configs, establish_connection
+from backend.task_engine import load_device_configs, establish_connection, extract_netmiko_config
 
-#Backup for one device
-def backup_switch(name, config):
-
-    #Timestamp used
+# Backup a single switch
+def backup_switch(device_name, device_config):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-    #Creating a directory for backup storing
     os.makedirs("switch_backups", exist_ok=True)
 
     try:
+        # Extract only Netmiko-relevant fields
+        netmiko_config = extract_netmiko_config(device_config)
 
-        #Connecting to the device
-        net_connect = establish_connection(config)
+        # Establish connection
+        net_connect = establish_connection(netmiko_config)
 
-        #Retriving the running configuration
+        # Retrieve running configuration
         output = net_connect.send_command("show running-config")
 
-        #Disconnecting from the device
+        # Disconnect
         net_connect.disconnect()
 
-        #Naming the file using the timestamp and the name of the router + ip to better access the backup
-        filename = f"switch_backups/{name}_{config['ip']}_{timestamp}.txt"
+        # Save to file
+        filename = f"switch_backups/{device_name}_{netmiko_config['ip']}_{timestamp}.txt"
         with open(filename, "w") as f:
-            #Writing in file
             f.write(output)
+
         print(f"[SUCCESS] Backup saved: {filename}")
+
     except Exception as e:
-        print(f"[ERROR] Could not backup {name}: {e}")
+        print(f"[ERROR] Could not backup {device_name}: {e}")
 
-#Backup for all devices using the function above
-def backup_all_devices():
-
+# Backup all switches
+def backup_all_switches():
     devices = load_device_configs()
     if not devices:
         print("No devices found to backup.")
         return
 
     print(f"\n=== Starting Backup for {len(devices)} Devices ===")
-    for name, config in devices.items():
-        backup_switch(name, config)
+    for device_name, device_config in devices.items():
+        backup_switch(device_name, device_config)

@@ -1,8 +1,7 @@
-from backend.task_engine import establish_connection
+from backend.task_engine import establish_connection, extract_netmiko_config
 from netmiko.exceptions import NetmikoTimeoutException, NetmikoAuthenticationException
 
 def build_vtp_config():
-
     config = []
 
     domain = input("\n🔧 Enter the VTP domain name: ").strip()
@@ -17,10 +16,12 @@ def build_vtp_config():
     return config
 
 def configure_vtp(device_name, device_config):
-
     try:
+        # Extract Netmiko-specific configuration
+        netmiko_config = extract_netmiko_config(device_config)
+
         print(f"\n🔌 Connecting to {device_name} ({device_config['ip']})...")
-        net_connect = establish_connection(device_config)
+        net_connect = establish_connection(netmiko_config)
 
         config = build_vtp_config()
         net_connect.send_config_set(config)

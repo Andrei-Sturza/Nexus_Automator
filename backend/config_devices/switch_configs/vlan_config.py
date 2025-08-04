@@ -1,8 +1,7 @@
-from backend.task_engine import establish_connection
+from backend.task_engine import establish_connection, extract_netmiko_config
 from netmiko.exceptions import NetmikoTimeoutException, NetmikoAuthenticationException
 
 def creating_vlans(n, config):
-
     for _ in range(n):
         number = input("\nVLAN ID: ").strip()
         config.append(f"vlan {number}")
@@ -14,23 +13,27 @@ def creating_vlans(n, config):
         if conf == 'Y':
             ip_address = input("IP address: ").strip()
             net_mask = input("Subnet mask: ").strip()
-            config.extend([f"interface vlan {number}",
-                           f"ip address {ip_address} {net_mask}",
-                           "no shutdown"])
+            config.extend([
+                f"interface vlan {number}",
+                f"ip address {ip_address} {net_mask}",
+                "no shutdown"
+            ])
 
 def configure_vlans(device_name, device_config):
-
     try:
-        net_connect = establish_connection(device_config)
-        config = []
+        # Extract Netmiko-ready config
+        netmiko_config = extract_netmiko_config(device_config)
 
+        print(f"\n🔌 Connecting to {device_name} ({device_config['ip']})...")
+        net_connect = establish_connection(netmiko_config)
+
+        config = []
         vlan_count = int(input(f"\nHow many VLANs do you want to create on {device_name}? "))
         creating_vlans(vlan_count, config)
 
         print(f"\n📤 Sending configuration to {device_name}...")
         output = net_connect.send_config_set(config)
 
-        #output = net_connect.send_command("show vlan brief")
         print("\n✅ VLANs configured successfully.")
         print("\n🔧 Output:\n", output)
 

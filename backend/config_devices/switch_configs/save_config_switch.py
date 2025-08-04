@@ -1,27 +1,22 @@
-#This function is used for simply saving the config of the device because the function from Netmiko doesn't work properly
-
-from backend.task_engine import establish_connection
+from backend.task_engine import establish_connection, extract_netmiko_config
 from netmiko.exceptions import NetmikoTimeoutException, NetmikoAuthenticationException
 
 def save_switch_config(device_name, device_config):
-
-    #Simple prompt
     print(f"\n#### Connecting to {device_name} ({device_config['ip']}) ####")
 
-    #Used it with error checking
     try:
+        # Extract Netmiko-compatible fields
+        netmiko_config = extract_netmiko_config(device_config)
 
-        #Connecting to the device
-        net_connect = establish_connection(device_config)
+        # Connect to the switch
+        net_connect = establish_connection(netmiko_config)
 
-        #Sending the actual command to the router
+        # Send command to save configuration
         output = net_connect.send_command("write memory")  # or just 'write'
 
-        #Prompting a success message
         print(f"✅ {device_name}: Configuration saved successfully.")
         print(f"Output:\n{output}\n")
 
-        #Disconnecting from the router
         net_connect.disconnect()
 
     except NetmikoTimeoutException:
