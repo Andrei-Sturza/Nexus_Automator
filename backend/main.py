@@ -15,6 +15,8 @@ from backend.config_devices.switch_configs.vtp_config import configure_vtp
 from backend.config_devices.switch_configs.save_config_switch import save_switch_config
 from backend.config_devices.switch_configs.backup_switch import backup_switch
 from backend.task_engine import extract_netmiko_config
+from backend.devices.add_devices import insert_new_device
+
 
 # Menu functions
 def top_menu():
@@ -22,7 +24,8 @@ def top_menu():
     print("1. Configure a Router")
     print("2. Configure a Switch")
     print("3. Network Monitoring")
-    print("4. Exit")
+    print("4. Add new device")
+    print("5. Exit")
     return input("Choose an option (1-4): ").strip()
 
 
@@ -148,6 +151,9 @@ def main():
                     print("Invalid option. Try again.")
 
         elif section == '4':
+            insert_new_device()
+            break
+        elif section == '5':
             print("Goodbye!")
             break
         else:
